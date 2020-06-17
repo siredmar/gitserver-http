@@ -27,7 +27,7 @@ readonly SOCKUSERID="$USERID"
 readonly FCGISOCKET="/var/run/fcgiwrap.socket"
 
 main() {
-  mkdir -p $GIT_PROJECT_ROOT
+  mkdir -p ${GIT_PROJECT_ROOT}
 
   # Checks if $GIT_INITIAL_ROOT has files
   if [[ $(ls -A ${GIT_INITIAL_ROOT}) ]]; then
@@ -37,38 +37,38 @@ main() {
 }
 
 initialize_services() {
-  # Check permissions on $GIT_PROJECT_ROOT
+  # Check permissions on ${GIT_PROJECT_ROOT}
   if [[ ! $(stat -c %A ${GIT_PROJECT_ROOT}) -eq "drwxr-xr-x" ]]; then
-    chown -R giti:git $GIT_PROJECT_ROOT
-    chmod -R 775 $GIT_PROJECT_ROOT
+    chown -R ${GIT_USER}:${GIT_GROUP} ${GIT_PROJECT_ROOT}
+    chmod -R 775 ${GIT_PROJECT_ROOT}
   fi
 
   /usr/bin/spawn-fcgi \
-    -s $FCGISOCKET \
+    -s ${FCGISOCKET} \
     -F 4 \
-    -u $USERID \
-    -g $USERID \
-    -U $USERID \
-    -G $GIT_GROUP -- \
-    "$FCGIPROGRAM"
+    -u ${USERID} \
+    -g ${USERID} \
+    -U ${USERID} \
+    -G ${GIT_GROUP} -- \
+    "${FCGIPROGRAM}"
   exec nginx
 }
 
 initialize_initial_repositories() {
-  cd $GIT_INITIAL_ROOT
+  cd ${GIT_INITIAL_ROOT}
   for dir in $(find . -name "*" -type d -maxdepth 1 -mindepth 1); do
-    echo "Initializing repository $dir"
-    init_and_commit $dir
+    echo "Initializing repository ${dir}"
+    init_and_commit ${dir}
   done
 }
 
 init_and_commit() {
-  local dir=$1
+  local dir=${1}
   local tmp_dir=$(mktemp -d)
 
-  cp -r $dir/* $tmp_dir
+  cp -r ${dir}/* ${tmp_dir}
   pushd . >/dev/null
-  cd $tmp_dir
+  cd ${tmp_dir}
 
   if [[ -d "./.git" ]]; then
     rm -rf ./.git
@@ -77,7 +77,7 @@ init_and_commit() {
   git init &>/dev/null
   git add --all . &>/dev/null
   git commit -m "first commit" &>/dev/null
-  git clone --bare $tmp_dir $GIT_PROJECT_ROOT/${dir}.git &>/dev/null
+  git clone --bare ${tmp_dir} ${GIT_PROJECT_ROOT}/${dir}.git &>/dev/null
 
   popd >/dev/null
 }
