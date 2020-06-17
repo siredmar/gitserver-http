@@ -27,6 +27,7 @@ readonly SOCKUSERID="$USERID"
 readonly FCGISOCKET="/var/run/fcgiwrap.socket"
 
 main() {
+  create_user_and_groups
   mkdir -p ${GIT_PROJECT_ROOT}
 
   # Checks if $GIT_INITIAL_ROOT has files
@@ -34,6 +35,12 @@ main() {
     initialize_initial_repositories
   fi
   initialize_services
+}
+
+create_user_and_groups() {
+  addgroup -g ${LOCAL_GID:-1000} git
+  adduser ${GIT_USER} -h /var/lib/git -D --uid ${LOCAL_UID:-1000} --ingroup git
+  adduser nginx ${GIT_GROUP}
 }
 
 initialize_services() {
